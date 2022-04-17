@@ -8,15 +8,9 @@ import (
 	"strings"
 )
 
-const fromDir string = "./desktop"
-const toDir string = "./desktop/move"
-
-var (
-	excludeDir []string = []string{"move", "exclude1", "exclude2"}
-	excludeExt []string = []string{"ext1", "ext2"}
-)
-
 func main() {
+	load()
+
 	doMain()
 }
 
@@ -64,13 +58,13 @@ func move() {
 }
 
 func isExclude(path string) bool {
-	for _, e := range excludeDir {
+	for _, e := range exDir {
 		if path == e {
 			return true
 		}
 	}
 
-	for _, e := range excludeExt {
+	for _, e := range exExt {
 		if strings.HasSuffix(path, e) {
 			return true
 		}
