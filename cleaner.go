@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -47,8 +48,14 @@ func move() {
 			continue
 		}
 
-		from := fromDir + "/" + f.Name()
-		to := toDir + "/" + f.Name()
+		modTime := f.ModTime().Format("20060102")
+		if err := mkdir(fmt.Sprintf("%s/%s", toDir, modTime)); err != nil {
+			log.Println(err)
+			continue
+		}
+
+		from := fmt.Sprintf("%s/%s", fromDir, f.Name())
+		to := fmt.Sprintf("%s/%s/%s", toDir, modTime, f.Name())
 		if err := os.Rename(from, to); err != nil {
 			log.Println(err)
 		}
