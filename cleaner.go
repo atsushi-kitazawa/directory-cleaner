@@ -1,18 +1,16 @@
 package main
 
 import (
-	"io"
 	"io/ioutil"
 	"log"
 	"os"
 	"strings"
 )
 
-var (
-	fromDir string = "./desktop"
-	toDir   string = "./desktop/move"
+const fromDir string = "./desktop"
+const toDir string = "./desktop/move"
 
-	//only available under the top directory
+var (
 	excludeDir []string = []string{"move", "exclude1", "exclude2"}
 	excludeExt []string = []string{"ext1", "ext2"}
 )
@@ -26,7 +24,7 @@ func doMain() {
 		log.Fatalln(err)
 	}
 
-	traverse(fromDir)
+	move()
 }
 
 func mkdir(dir string) error {
@@ -38,71 +36,24 @@ func mkdir(dir string) error {
 	return nil
 }
 
-func traverse(baseDir string) {
-	files, err := ioutil.ReadDir(baseDir)
+func move() {
+	files, err := ioutil.ReadDir(fromDir)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	var tmp string
 	for _, f := range files {
-		//only the top directory is valid for exclusion listings
-		if baseDir == fromDir && isExclude(f.Name()) {
+		if isExclude(f.Name()) {
 			continue
 		}
 
-		if f.IsDir() {
-			dir := baseDir + "/" + f.Name()
-			tmp = toDir
-			toDir = toDir + "/" + f.Name()
-			traverse(dir)
-		} else {
-			file := baseDir + "/" + f.Name()
-			move(f, file, toDir)
+		from := fromDir + "/" + f.Name()
+		to := toDir + "/" + f.Name()
+		if err := os.Rename(from, to); err != nil {
+			log.Println(err)
 		}
+
 	}
-	toDir = tmp
-}
-
-func move(f os.FileInfo, file string, toDir string) {
-	if err := mkdir(toDir); err != nil {
-		log.Println(err)
-		return
-	}
-
-	if err := copy(f, file, toDir); err != nil {
-		panic(err)
-	}
-
-	delete(file)
-}
-
-func copy(f os.FileInfo, file string, toDir string) error {
-	from, err := os.Open(file)
-	if err != nil {
-		log.Println("os.Open " + err.Error())
-		return err
-	}
-	defer from.Close()
-
-	to, err := os.Create(toDir + "/" + f.Name())
-	if err != nil {
-		log.Println("os.Create " + err.Error())
-		return err
-	}
-	defer to.Close()
-
-	_, err = io.Copy(to, from)
-	if err != nil {
-		log.Println("io.Copy " + err.Error())
-		return err
-	}
-
-	return nil
-}
-
-func delete(file string) {
-
 }
 
 func isExclude(path string) bool {
